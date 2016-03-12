@@ -13,7 +13,8 @@ cmd_base = 'racadm serveraction power'
 
 def cf(x)
 
-   config = YAML.load_file("hosts.yaml")
+   z = ENV['RACK_HOME'] + '/'
+   config = YAML.load_file(z + "hosts.yaml")
    out = config["config"]
    return out[x]
 
