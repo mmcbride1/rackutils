@@ -1,0 +1,94 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'net/ssh'
+require 'yaml'
+
+# server action primary command #
+cmd_base = 'racadm serveraction power'
+
+# Configuration:
+# Include credentials
+# and rack info.
+
+def cf(x)
+
+   config = YAML.load_file("hosts.yaml")
+   out = config["config"]
+   return out[x]
+
+end
+
+# SSH (primary):
+# iDRAC accessable via
+# ssh and therefore 
+# controlled remotely 
+
+def ssh_primary(host, cmd)
+
+   user = cf('user')
+   pass = cf('pass')
+
+   begin
+      ssh = Net::SSH.start(host, user, :password => pass)
+      out = ssh.exec!(cmd)
+      ssh.close
+      puts out
+   rescue StandardError => e
+      puts e.to_s
+   end 
+
+end
+
+# Parse arguments and
+# complete power cycle
+# as specified by command
+
+if ARGV[0] and (ARGV[0] == 'up' or ARGV[0] == 'down')
+
+   cmd_base += ARGV[0]
+   tt =  ARGV[0].upcase
+   addr_list = cf('servers').split(',')
+
+   if !ARGV[1] 
+
+      addr_list.each do |ip|
+      puts "powering #{tt} unit @#{ip}"
+      ssh_primary(ip, cmd_base)
+      end
+      puts "+===========================+ "
+      puts "  POWER #{tt} CYCLE COMPLETE  "
+      puts "+===========================+ "
+
+   elsif ARGV[1]
+
+      if addr_list.include? ARGV[1]
+      puts "powering #{tt} unit @#{ARGV[1]}"
+      ssh_primary(ARGV[1], cmd_base) 
+      puts "+=====================+   "
+      puts "  POWER #{tt} COMPLETE    "
+      puts "+=====================+   "
+
+      else
+
+      puts "destination '#{ARGV[1]}' not listed!"
+
+      end
+
+   end
+
+else
+
+usage = %q{
+*usage*:
+                                          
+ must include a directive 'up/down'       
+ and an address parameter @#{hostname/ip}.
+                                          
+ ex: $~ power-mg up 192.168.1.123          
+                                           
+}
+
+puts usage
+
+end
