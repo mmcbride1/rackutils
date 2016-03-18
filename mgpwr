@@ -57,18 +57,18 @@ if ARGV[0] and (ARGV[0] == 'up' or ARGV[0] == 'down')
       puts "powering #{tt} unit @#{ip}"
       ssh_primary(ip, cmd_base)
       end
-      puts "<===========================> "
+      puts "*===========================* "
       puts "  POWER #{tt} CYCLE COMPLETE  "
-      puts "<===========================> "
+      puts "*===========================* "
 
    elsif ARGV[1]
 
       if addr_list.include? ARGV[1]
       puts "powering #{tt} unit @#{ARGV[1]}"
       ssh_primary(ARGV[1], cmd_base) 
-      puts "<=====================>   "
+      puts "*=====================*   "
       puts "  POWER #{tt} COMPLETE    "
-      puts "<=====================>   "
+      puts "*=====================*   "
 
       else
 
