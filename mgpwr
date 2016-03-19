@@ -53,9 +53,12 @@ if ARGV[0] and (ARGV[0] == 'up' or ARGV[0] == 'down')
 
    if !ARGV[1] 
 
-      addr_list.each do |ip|
+      addr_list.each_with_index do |ip, index|
       puts "powering #{tt} unit @#{ip}"
       ssh_primary(ip, cmd_base)
+      if index != addr_list.size - 1 
+         sleep 15 
+      end
       end
       puts "*===========================* "
       puts "  POWER #{tt} CYCLE COMPLETE  "
