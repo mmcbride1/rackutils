@@ -1,7 +1,19 @@
 #!/bin/bash
 
+################################
+# mgvm_up           (03/18/16) #
+#                              #
+# Init the psnet-hdp-vm        #
+# virtual machine collection   #
+# on startup. managed via cron #
+# nodes added manually         #
+################################
+
 # log file #
-LOG=/var/log/hadoop-mg
+LOG=/var/log/mgvm_up.log
+
+# mgmt home #
+MGT=/home/master/Management
 
 # connection tries #
 ATTEMPTS=0
@@ -23,7 +35,7 @@ function log() {
 while [ $ATTEMPTS -lt 5 ]
 do
 
-    sleep 5
+    sleep 60
   
     # exit code sum should be zero #
     PING=0
@@ -38,7 +50,7 @@ do
 
     if [ $PING -eq 0 ]
     then
-        START=$(hadoop-mg start 2>&1 > /dev/null)
+        START=$($MGT/hadoop-mg start 2>&1 > /dev/null)
         if [ $? -eq 0 ]; then
             log 'cluster started successfully'
         else
