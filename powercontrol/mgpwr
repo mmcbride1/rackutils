@@ -2,33 +2,20 @@
 
 require 'rubygems'
 require 'net/ssh'
-require 'yaml'
+require_relative 'configuration'
 
 # server action primary command #
 cmd_base = 'racadm serveraction power'
-
-# Configuration:
-# Include credentials
-# and rack info.
-
-def cf(x)
-
-   z = ENV['RACK_HOME'] + '/'
-   config = YAML.load_file(z + "hosts.yaml")
-   out = config["config"]
-   return out[x]
-
-end
+cmd_runn = '/sbin/shutdown -h now'
 
 # SSH (primary):
 # iDRAC accessable via
 # ssh and therefore 
 # controlled remotely 
-
-def ssh_primary(host, cmd)
-
-   user = cf('user')
-   pass = cf('pass')
+def ssh_primary(host, cmd, cf)
+   
+   user = cf.get_user
+   pass = cf.get_passwd
 
    begin
       ssh = Net::SSH.start(host, user, :password => pass)
@@ -44,18 +31,27 @@ end
 # Parse arguments and
 # complete power cycle
 # as specified by command
-
 if ARGV[0] and (ARGV[0] == 'up' or ARGV[0] == 'down')
 
    cmd_base += ARGV[0]
    tt =  if ARGV[0].upcase == 'UP' then 'INIT' else ARGV[0].upcase end
-   addr_list = cf('servers').split(',')
+
+   if ARGV[0] == 'down'
+         config = Configuration.new('shutdown')
+         cmd = cmd_runn
+      else
+         config = Configuration.new('startup')
+         cmd = cmd_base 
+   end
+
+   addr_list = config.get_serverlist
 
    if !ARGV[1] 
 
       addr_list.each_with_index do |ip, index|
-      puts "powering #{tt} unit @#{ip}"
-      ssh_primary(ip, cmd_base)
+      puts "powering #{tt} unit @#{ip}"     
+      puts "#{cmd} - #{ip}"
+      ssh_primary(ip, cmd, config)
       if index != addr_list.size - 1 
          sleep 15 
       end
@@ -68,7 +64,8 @@ if ARGV[0] and (ARGV[0] == 'up' or ARGV[0] == 'down')
 
       if addr_list.include? ARGV[1]
       puts "powering #{tt} unit @#{ARGV[1]}"
-      ssh_primary(ARGV[1], cmd_base) 
+      puts "#{cmd} - #{ARGV[1]}"
+      ssh_primary(ARGV[1], cmd, config) 
       puts "*=====================*   "
       puts "  POWER #{tt} COMPLETE    "
       puts "*=====================*   "

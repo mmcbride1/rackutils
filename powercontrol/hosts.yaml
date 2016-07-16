@@ -1,0 +1,9 @@
+startup:
+         user: root
+         pass: calvin
+         servers: 192.168.1.120,192.168.1.121,192.168.1.122
+
+shutdown:
+         user: root
+         pass: $Pencer1
+         servers: 192.168.1.239,192.168.1.241,192.168.1.235
